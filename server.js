@@ -56,6 +56,18 @@ if(!_.isBoolean(newTodo.completed)||!_.isString(newTodo.description))
 
 });
 
+
+app.get('/listall/delete/:id',function(req,res){
+         var id= parseInt(req.params.id);
+         var matchedTodo=_.findWhere(todos,{id:id})
+         if(matchedTodo){todos=_.without(todos,matchedTodo);}
+         else res.status(404).json("error":"nothing found on that id");
+         
+
+res.json(todos);
+
+});
+
 app.listen(port,function(){
 	console.log('listening on port'+port);
 });
