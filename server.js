@@ -20,8 +20,10 @@ resp+=JSON.stringify(todos[i])+'\n';
 
 app.get('/listall/:id',function(req,res){
 	var resp='';
-	console.log(req.params.id);
-	todos.forEach(function(todo){
+	var id=parseInt(req.params.id)
+	var matchedTodo=_.findWhere(todos,{id:id})
+	console.log(matchedTodo);
+	/*todos.forEach(function(todo){
 		console.log(todo);
 		console.log(typeof todo.id);
 		console.log(req.params.id==todo.id);
@@ -29,12 +31,23 @@ app.get('/listall/:id',function(req,res){
 
 			resp=todo;
 		}
-	})
-	res.json(resp);
+	})*/
+if(matchedTodo){res.json(matchedTodo);}
+else{
+	res.status(404).send();
+}
+
 });
 
 app.post('/todos',function(req,res){
-	var newTodo=req.body;
+	var newTodobef=req.body;
+	var newTodo=_.pick(newTodobef,'description','completed')
+if(!_.isBoolean(newTodo.completed)||!_.isString(newTodo.description))
+
+{
+	res.status(400).send();
+}
+
 	newTodo.id=todoNextId;
 	todos.push(newTodo);
 	console.log(newTodo);
