@@ -44,6 +44,7 @@ app.post('/todos',function(req,res){
 	var newTodo=_.pick(newTodobef,'description','completed')
 if(!_.isBoolean(newTodo.completed)||!_.isString(newTodo.description))
 
+
 {
 	res.status(400).send();
 }
@@ -57,15 +58,45 @@ if(!_.isBoolean(newTodo.completed)||!_.isString(newTodo.description))
 });
 
 
-app.get('/listall/delete/:id',function(req,res){
+app.delete('/listall/delete/:id',function(req,res){
          var id= parseInt(req.params.id);
          var matchedTodo=_.findWhere(todos,{id:id})
          if(matchedTodo){todos=_.without(todos,matchedTodo);}
-         else res.status(404).json("error":"nothing found on that id");
+         else res.status(404).json({"error":"nothing found on that id"});
          
 
 res.json(todos);
 
+});
+
+
+app.put('/listall/put/:id',function(req,res){
+var beforUpdate=_.pick(req.body,'description','completed');
+
+var updatedTodo={};
+
+if(beforUpdate.hasOwnProperty('completed') && _.isBoolean(beforUpdate.completed) ){
+updatedTodo.completed=beforUpdate.completed;
+}else if(beforUpdate.hasOwnProperty('completed')){
+res.status(400).send();
+}
+else{}
+if(beforUpdate.hasOwnProperty('description') && _.isString(beforUpdate.description) && beforUpdate.description.trim().length>0 ){
+updatedTodo.description=beforUpdate.description;
+}else if(beforUpdate.hasOwnProperty('description')){
+res.status(400).send();
+}
+else{}
+var id=parseInt(req.params.id)
+	var matchedTodo=_.findWhere(todos,{id:id})
+	if(matchedTodo){
+		updatedTodo=_.extend(matchedTodo,updatedTodo);
+		todos.push(updatedTodo);
+
+	}else{
+		res.status(400).json({"error":"requested component no more"});
+	}
+	res.json(todos);
 });
 
 app.listen(port,function(){
