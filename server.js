@@ -1,22 +1,14 @@
 var express=require('express');
 var app = express();
 var port =process.env.PORT || 3000;
-
-var todos=[{
-	id:1,
-	description:'study cross browser hacks',
-	complete:false
-},
-{
-	id:2,
-	description:'implement angular custom directives',
-	complete:false
-}];
-
-
+var bodyparser=require('body-parser');
+var todos=[];
+var todoNextId=1;
+var _= require('underscore');
 app.get('/',function(req,res){
 	res.send('Welcome to TO-DO api');
 });
+app.use(bodyparser.json());
 
 app.get('/listall',function(req,res){
 	var resp='';
@@ -39,6 +31,16 @@ app.get('/listall/:id',function(req,res){
 		}
 	})
 	res.json(resp);
+});
+
+app.post('/todos',function(req,res){
+	var newTodo=req.body;
+	newTodo.id=todoNextId;
+	todos.push(newTodo);
+	console.log(newTodo);
+	res.json(todos);
+	todoNextId++;
+
 });
 
 app.listen(port,function(){
