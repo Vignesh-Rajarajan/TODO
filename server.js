@@ -11,11 +11,25 @@ app.get('/',function(req,res){
 app.use(bodyparser.json());
 
 app.get('/listall',function(req,res){
-	var resp='';
-	for(var i=0;i<todos.length;i++){
-resp+=JSON.stringify(todos[i])+'\n';
-	}
-	res.send('The todos are as follows \n'+resp);
+	var copiedVal=todos;
+	var searchStr=req.query;
+	console.log(searchStr);
+    if(searchStr.hasOwnProperty('completed') && searchStr.completed==='true'){
+    	console.log(searchStr.completed);
+    	copiedVal=_.where(copiedVal,{'completed':true});
+
+console.log('sddddd'+copiedVal);
+    }else if(searchStr.hasOwnProperty('completed') && searchStr.completed==='false'){
+    	console.log('eeeeeeeeemessage');
+copiedVal=_.where(copiedVal,{'completed':false});
+    }else if(searchStr.completed.trim().length<=0){
+    	res.status(400).send();
+    }else{
+
+    }
+
+console.log(JSON.stringify(copiedVal));
+	res.json(copiedVal);
 });
 
 app.get('/listall/:id',function(req,res){
@@ -38,6 +52,7 @@ else{
 }
 
 });
+
 
 app.post('/todos',function(req,res){
 	var newTodobef=req.body;
