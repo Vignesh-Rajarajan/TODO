@@ -89,28 +89,19 @@ app.post('/todos', function(req, res) {
 
 app.delete('/listall/delete/:id', function(req, res) {
     var id = parseInt(req.params.id);
-db.todo.findById(id).then(function(todo) {
-    	if(!!todo){
-        res.json(todo.toJSON());
-    }else{
-    	res.status(404).send();
-    }
-    }, function(e) {
-        res.status(500).send();
-    });
-
-
-   /* var matchedTodo = _.findWhere(todos, {
-        id: id
-    })
-    if (matchedTodo) {
-        todos = _.without(todos, matchedTodo);
-    } else res.status(404).json({
-        "error": "nothing found on that id"
-    });
-*/
-
-    res.json(todos);
+    console.log('sggrgrtg'+id);
+    db.todo.destroy({
+  where: {id:id}
+}).then(function(data){
+	console.log(data);
+	if(data>0){res.status(200).json({"data":"successfully deleted"});}
+	else{
+		res.status(404).json({"data":"nothing found"})
+	}
+	
+},function(e){
+	res.status(500).json();
+});
 
 });
 
