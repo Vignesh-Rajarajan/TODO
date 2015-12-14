@@ -9,7 +9,7 @@ return sequelize.define('todo',{
 	},
 	completed:{
 		type:dataTypes.BOOLEAN,
-		defaultValues:false,
+		defaultValue:false,
 		allowNull:false
 	}
 });
