@@ -149,6 +149,27 @@ app.put('/listall/put/:id', function(req, res) {
 	});
 
 });
+
+app.post('/users',function(req,res){
+	var user=_.pick(req.body, 'email', 'password');
+	console.log(user);
+	if(!user){
+		res.status(400).json();
+	}
+  db.user.create(user).then(function(user){
+      if(user){
+      	res.json(user);
+      }
+      else{
+      	res.status(404).json();
+      }
+  }, function(e){
+  	res.status(400).json(e);
+  });
+
+});
+
+
 db.sequelize.sync().then(function() {
 	app.listen(port, function() {
 		console.log('listening on port' + port);
