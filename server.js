@@ -6,7 +6,7 @@ var todos = [];
 var todoNextId = 1;
 var _ = require('underscore');
 var db = require('./db.js');
-
+var bcrypt = require('bcrypt-nodejs');
 
 
 app.get('/', function(req, res) {
@@ -169,8 +169,33 @@ app.post('/users',function(req,res){
 
 });
 
+app.post('/users/login',function(req,res){
 
-db.sequelize.sync({force:true}).then(function() {
+         var user=_.pick(req.body,'email','password');
+         console.log(user);
+         if( typeof user.email =='string' && typeof user.email =='string' ){
+			//console.log(user);
+         	db.user.findOne({where:{email:user.email}}).then(function(data){
+         		console.log(data);
+         		if(data && bcrypt.compareSync(user.password,data.get('password_hash'))){
+
+         		res.json(data.toPublicJson());
+         	} else if(!data || !bcrypt.compareSync(user.password,data.get('password_hash'))){
+         		res.status(404).json({"error":"Oops nothing found/wrong password"});
+         	}
+         	},function(e){
+         		res.status(500).json({"e":"kfmkmk"});
+         	})
+
+         } else{
+         	res.status(400).json({"error":"Oops nothing found"});
+         }
+
+
+ 
+});
+
+db.sequelize.sync().then(function() {
 	app.listen(port, function() {
 		console.log('listening on port' + port);
 	});
