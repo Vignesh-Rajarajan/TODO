@@ -130,72 +130,64 @@ app.put('/listall/put/:id', function(req, res) {
 	}
 	var id = parseInt(req.params.id)
 	db.todo.findById(id).then(function(data) {
-		if(data){
+		if (data) {
 
-		data.update(updatedTodo).then(function(todo) {
-			if (!!todo) {
-				res.json(todo.toJSON());
-			} else {
-				res.status(404).json();
-			}
-		}, function(e) {
-			res.status(500).json(e);
-		});
-}else{
-	res.status(404).json({"data":"nullll"})
-}
+			data.update(updatedTodo).then(function(todo) {
+				if (!!todo) {
+					res.json(todo.toJSON());
+				} else {
+					res.status(404).json();
+				}
+			}, function(e) {
+				res.status(500).json(e);
+			});
+		} else {
+			res.status(404).json({
+				"data": "nullll"
+			})
+		}
 
 
 	});
 
 });
 
-app.post('/users',function(req,res){
-	var user=_.pick(req.body, 'email', 'password');
+app.post('/users', function(req, res) {
+	var user = _.pick(req.body, 'email', 'password');
 	console.log(user);
-	if(!user){
+	if (!user) {
 		res.status(400).json();
 	}
-  db.user.create(user).then(function(user){
-      if(user){
-      	res.json(user.toPublicJson());
-      }
-      else{
-      	res.status(404).json();
-      }
-  }, function(e){
-  	res.status(400).json(e);
-  });
+	db.user.create(user).then(function(user) {
+		if (user) {
+			res.json(user.toPublicJson());
+		} else {
+			res.status(404).json();
+		}
+	}, function(e) {
+		res.status(400).json(e);
+	});
 
 });
 
-app.post('/users/login',function(req,res){
+app.post('/users/login', function(req, res) {
 
-         var user=_.pick(req.body,'email','password');
-         console.log(user);
-         if( typeof user.email =='string' && typeof user.email =='string' ){
-			//console.log(user);
-         	db.user.findOne({where:{email:user.email}}).then(function(data){
-         		console.log(data);
-         		if(data && bcrypt.compareSync(user.password,data.get('password_hash'))){
+	var user = _.pick(req.body, 'email', 'password');
+	console.log(user);
 
-         		res.json(data.toPublicJson());
-         	} else if(!data || !bcrypt.compareSync(user.password,data.get('password_hash'))){
-         		res.status(404).json({"error":"Oops nothing found/wrong password"});
-         	}
-         	},function(e){
-         		res.status(500).json({"e":"kfmkmk"});
-         	})
+	
+		//console.log(user);
+		db.user.authenticate(user).then(function(user){
+			res.json(user.toPublicJson());
+		},function(e){
+			res.status(404).json(e)
+		});
+		
 
-         } else{
-         	res.status(400).json({"error":"Oops nothing found"});
-         }
-
-
- 
+	 
 });
 
-db.sequelize.sync().then(function() {
+db.sequelize.sync({force:true}).then(function() {
 	app.listen(port, function() {
 		console.log('listening on port' + port);
 	});
