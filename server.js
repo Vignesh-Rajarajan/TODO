@@ -158,7 +158,7 @@ app.post('/users',function(req,res){
 	}
   db.user.create(user).then(function(user){
       if(user){
-      	res.json(user);
+      	res.json(user.toPublicJson());
       }
       else{
       	res.status(404).json();
@@ -170,7 +170,7 @@ app.post('/users',function(req,res){
 });
 
 
-db.sequelize.sync().then(function() {
+db.sequelize.sync({force:true}).then(function() {
 	app.listen(port, function() {
 		console.log('listening on port' + port);
 	});
