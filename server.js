@@ -178,7 +178,7 @@ app.post('/users/login', function(req, res) {
 	
 		//console.log(user);
 		db.user.authenticate(user).then(function(user){
-			res.json(user.toPublicJson());
+			res.header('Auth',user.generateToken('authentication')).json(user.toPublicJson());
 		},function(e){
 			res.status(404).json(e)
 		});
