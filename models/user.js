@@ -53,14 +53,14 @@ module.exports = function(sequelize, dataTypes) {
 					return undefined;
 				}
 				try {
-					var stringData = JSON.stringify(type);
+					var stringData = JSON.stringify({id:this.get('id'),type:type});
 					console.log(stringData);
 					var genData = cryptojs.AES.encrypt(stringData, 'abc123!@#').toString();
-					console.log(genData);
+					//console.log(genData);
 					var token = jwt.sign({
 						token: genData
 					}, 'vickey290');
-					console.log(token);
+					//console.log(token);
 					return token;
 				} catch (e) {
 					return undefined;
@@ -89,19 +89,49 @@ module.exports = function(sequelize, dataTypes) {
 								});
 							}
 						}, function(e) {
-							console.log('in user file reject');
+							//console.log('in user file reject');
 							reject({
 								"error": "OOPS nothing found"
 							});
 						})
 					} else {
-						console.log('in user file reject');
+						//console.log('in user file reject');
 						return reject({
 							"error": "please provide username or password"
 						});
 					}
 
 				});
+
+			},
+			authenticateToken: function(token) {
+				return new Promise(function(resolve, reject) {
+					try {
+						
+						var jwtDecoed = jwt.verify(token, 'vickey290');
+						
+						var cryptoDecoed = cryptojs.AES.decrypt(jwtDecoed.token, 'abc123!@#');
+						
+						var bytes = JSON.parse(cryptoDecoed.toString(cryptojs.enc.Utf8));
+						
+						user.findById(bytes.id).then(function(data) {
+							if (data) {
+								//console.log(data);
+								return resolve(data);
+							} else {
+								
+								return reject();
+							}
+
+						}, function(e) {
+
+							return reject();
+						})
+					} catch (e) {
+						reject(e);
+					}
+				});
+
 
 			}
 		}

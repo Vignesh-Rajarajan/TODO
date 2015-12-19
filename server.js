@@ -6,21 +6,21 @@ var todos = [];
 var todoNextId = 1;
 var _ = require('underscore');
 var db = require('./db.js');
+var middleware = require('./middleware.js')(db);
 var bcrypt = require('bcrypt-nodejs');
-
 
 app.get('/', function(req, res) {
 	res.send('Welcome to TO-DO api');
 });
 app.use(bodyparser.json());
+//app.use(middleware);
 
-
-app.get('/listall', function(req, res) {
+app.get('/listall', middleware.requireAuthentication, function(req, res) {
 
 	var copiedVal = {};
 	var searchStr = req.query;
 	if (searchStr.hasOwnProperty('completed') && searchStr.completed === 'true') {
-		console.log('dcewwwwwwwcsdcww');
+
 		copiedVal.completed = true;
 	} else if (searchStr.hasOwnProperty('completed') && searchStr.completed === 'false') {
 		copiedVal.completed = false;
@@ -36,7 +36,7 @@ app.get('/listall', function(req, res) {
 	}).then(function(data) {
 
 		if (!!data) {
-			console.log('dcewwwwwwwww');
+
 			res.json(data);
 		} else {
 			res.status(404).json();
@@ -47,7 +47,7 @@ app.get('/listall', function(req, res) {
 	});
 });
 
-app.get('/listall/:id', function(req, res) {
+app.get('/listall/:id', middleware.requireAuthentication, function(req, res) {
 	var resp = '';
 	var id = parseInt(req.params.id)
 	var matchedTodo = {};
@@ -68,21 +68,15 @@ app.get('/listall/:id', function(req, res) {
 });
 
 
-app.post('/todos', function(req, res) {
-	var newTodobef = req.body;
-	var newTodo = _.pick(newTodobef, 'description', 'completed')
-	if (!_.isBoolean(newTodo.completed) || !_.isString(newTodo.description))
-
-
-
-	{
-		res.status(400).send();
-	}
-
-	/*    newTodo.id = todoNextId++;*/
-
+app.post('/todos', middleware.requireAuthentication, function(req, res) {
+	var newTodo = _.pick(req.body, 'description', 'completed')
 	db.todo.create(newTodo).then(function(todo) {
-		res.json(todo.toJSON());
+		req.user.addTodo(todo).then(function() {
+			return todo.reload();
+		}).then(function(todo) {
+			res.json(todo.toJSON());
+		});
+
 	}, function(e) {
 		res.status(400).json(e);
 	});
@@ -91,9 +85,9 @@ app.post('/todos', function(req, res) {
 });
 
 
-app.delete('/listall/delete/:id', function(req, res) {
+app.delete('/listall/delete/:id', middleware.requireAuthentication, function(req, res) {
 	var id = parseInt(req.params.id);
-	console.log('sggrgrtg' + id);
+	//console.log('sggrgrtg' + id);
 	db.todo.destroy({
 		where: {
 			id: id
@@ -117,7 +111,7 @@ app.delete('/listall/delete/:id', function(req, res) {
 });
 
 
-app.put('/listall/put/:id', function(req, res) {
+app.put('/listall/put/:id', middleware.requireAuthentication, function(req, res) {
 	var beforUpdate = _.pick(req.body, 'description', 'completed');
 
 	var updatedTodo = {};
@@ -175,19 +169,19 @@ app.post('/users/login', function(req, res) {
 	var user = _.pick(req.body, 'email', 'password');
 	console.log(user);
 
-	
-		//console.log(user);
-		db.user.authenticate(user).then(function(user){
-			res.header('Auth',user.generateToken('authentication')).json(user.toPublicJson());
-		},function(e){
-			res.status(404).json(e)
-		});
-		
-
-	 
+	//console.log(user);
+	db.user.authenticate(user).then(function(user) {
+		var token = user.generateToken('authentication');
+		if (!token) {
+			res.status(401).json();
+		}
+		res.header('Auth', token).json(user.toPublicJson());
+	}, function(e) {
+		res.status(401).json(e);
+	});
 });
 
-db.sequelize.sync({force:true}).then(function() {
+db.sequelize.sync().then(function() {
 	app.listen(port, function() {
 		console.log('listening on port' + port);
 	});
