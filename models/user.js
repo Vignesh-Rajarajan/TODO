@@ -54,13 +54,13 @@ module.exports = function(sequelize, dataTypes) {
 				}
 				try {
 					var stringData = JSON.stringify({id:this.get('id'),type:type});
-					console.log(stringData);
+					
 					var genData = cryptojs.AES.encrypt(stringData, 'abc123!@#').toString();
-					//console.log(genData);
+					.
 					var token = jwt.sign({
 						token: genData
 					}, 'vickey290');
-					//console.log(token);
+					
 					return token;
 				} catch (e) {
 					return undefined;
@@ -71,31 +71,31 @@ module.exports = function(sequelize, dataTypes) {
 			authenticate: function(body) {
 				return new Promise(function(resolve, reject) {
 					if (typeof body.email == 'string' && typeof body.password == 'string') {
-						console.log('in userrr file' + body);
+						
 
 						user.findOne({
 							where: {
 								email: body.email
 							}
 						}).then(function(data) {
-							console.log('in user file' + data);
+							
 							if (data && bcrypt.compareSync(body.password, data.get('password_hash'))) {
 
 								resolve(data);
 							} else if (!data || !bcrypt.compareSync(body.password, data.get('password_hash'))) {
-								console.log('in user file reject');
+								
 								return reject({
 									"error": "please valid username or password"
 								});
 							}
 						}, function(e) {
-							//console.log('in user file reject');
+							
 							reject({
 								"error": "OOPS nothing found"
 							});
 						})
 					} else {
-						//console.log('in user file reject');
+						
 						return reject({
 							"error": "please provide username or password"
 						});
@@ -116,7 +116,7 @@ module.exports = function(sequelize, dataTypes) {
 						
 						user.findById(bytes.id).then(function(data) {
 							if (data) {
-								//console.log(data);
+						
 								return resolve(data);
 							} else {
 								

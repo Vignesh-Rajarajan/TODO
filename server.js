@@ -25,6 +25,9 @@ app.get('/listall', middleware.requireAuthentication, function(req, res) {
 	} else if (searchStr.hasOwnProperty('completed') && searchStr.completed === 'false') {
 		copiedVal.completed = false;
 	}
+	if(req.user.id){
+		copiedVal.userId=req.user.id;
+	}
 	if (searchStr.hasOwnProperty('q') && searchStr.q.length > 0) {
 		copiedVal.description = {
 			$like: '%' + searchStr.q + '%'
@@ -53,7 +56,12 @@ app.get('/listall/:id', middleware.requireAuthentication, function(req, res) {
 	var matchedTodo = {};
 
 
-	db.todo.findById(id).then(function(todo) {
+	db.todo.findOne({
+		where:{
+			id:id,
+			userId:req.user.id
+		}
+		}).then(function(todo) {
 		if (!!todo) {
 			res.json(todo.toJSON());
 		} else {
@@ -62,9 +70,6 @@ app.get('/listall/:id', middleware.requireAuthentication, function(req, res) {
 	}, function(e) {
 		res.status(500).send();
 	});
-	/*_.findWhere(todos, {
-			id: id
-		})*/
 });
 
 
@@ -87,13 +92,14 @@ app.post('/todos', middleware.requireAuthentication, function(req, res) {
 
 app.delete('/listall/delete/:id', middleware.requireAuthentication, function(req, res) {
 	var id = parseInt(req.params.id);
-	//console.log('sggrgrtg' + id);
+	
 	db.todo.destroy({
 		where: {
-			id: id
+			id: id,
+			userId:req.user.id
 		}
 	}).then(function(data) {
-		console.log(data);
+		
 		if (data > 0) {
 			res.status(200).json({
 				"data": "successfully deleted"
@@ -123,7 +129,7 @@ app.put('/listall/put/:id', middleware.requireAuthentication, function(req, res)
 		updatedTodo.description = beforUpdate.description;
 	}
 	var id = parseInt(req.params.id)
-	db.todo.findById(id).then(function(data) {
+	db.todo.findOne({where:{id:id, userId:req.user.id}}).then(function(data) {
 		if (data) {
 
 			data.update(updatedTodo).then(function(todo) {
@@ -148,7 +154,7 @@ app.put('/listall/put/:id', middleware.requireAuthentication, function(req, res)
 
 app.post('/users', function(req, res) {
 	var user = _.pick(req.body, 'email', 'password');
-	console.log(user);
+	
 	if (!user) {
 		res.status(400).json();
 	}
@@ -167,9 +173,9 @@ app.post('/users', function(req, res) {
 app.post('/users/login', function(req, res) {
 
 	var user = _.pick(req.body, 'email', 'password');
-	console.log(user);
+	
 
-	//console.log(user);
+	
 	db.user.authenticate(user).then(function(user) {
 		var token = user.generateToken('authentication');
 		if (!token) {
