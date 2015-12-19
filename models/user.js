@@ -53,14 +53,17 @@ module.exports = function(sequelize, dataTypes) {
 					return undefined;
 				}
 				try {
-					var stringData = JSON.stringify({id:this.get('id'),type:type});
-					
+					var stringData = JSON.stringify({
+						id: this.get('id'),
+						type: type
+					});
+
 					var genData = cryptojs.AES.encrypt(stringData, 'abc123!@#').toString();
 					.
 					var token = jwt.sign({
 						token: genData
 					}, 'vickey290');
-					
+
 					return token;
 				} catch (e) {
 					return undefined;
@@ -71,31 +74,31 @@ module.exports = function(sequelize, dataTypes) {
 			authenticate: function(body) {
 				return new Promise(function(resolve, reject) {
 					if (typeof body.email == 'string' && typeof body.password == 'string') {
-						
+
 
 						user.findOne({
 							where: {
 								email: body.email
 							}
 						}).then(function(data) {
-							
+
 							if (data && bcrypt.compareSync(body.password, data.get('password_hash'))) {
 
 								resolve(data);
 							} else if (!data || !bcrypt.compareSync(body.password, data.get('password_hash'))) {
-								
+
 								return reject({
 									"error": "please valid username or password"
 								});
 							}
 						}, function(e) {
-							
+
 							reject({
 								"error": "OOPS nothing found"
 							});
 						})
 					} else {
-						
+
 						return reject({
 							"error": "please provide username or password"
 						});
@@ -107,19 +110,19 @@ module.exports = function(sequelize, dataTypes) {
 			authenticateToken: function(token) {
 				return new Promise(function(resolve, reject) {
 					try {
-						
+
 						var jwtDecoed = jwt.verify(token, 'vickey290');
-						
+
 						var cryptoDecoed = cryptojs.AES.decrypt(jwtDecoed.token, 'abc123!@#');
-						
+
 						var bytes = JSON.parse(cryptoDecoed.toString(cryptojs.enc.Utf8));
-						
+
 						user.findById(bytes.id).then(function(data) {
 							if (data) {
-						
+
 								return resolve(data);
 							} else {
-								
+
 								return reject();
 							}
 

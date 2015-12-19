@@ -1,16 +1,16 @@
-module.exports=function(db){
-	return {
-		requireAuthentication:function(req,res,next){
-            var token= req.get('Auth');
-           
-            db.user.authenticateToken(token).then(function(user){
-                       req.user=user;
-                       next();
+module.exports = function(db) {
+  return {
+    requireAuthentication: function(req, res, next) {
+      var token = req.get('Auth');
 
-            },function(e){
-            	res.status(401).send();
+      db.user.authenticateToken(token).then(function(user) {
+        req.user = user;
+        next();
 
-            });
-		}
-	};
+      }, function(e) {
+        res.status(401).send();
+
+      });
+    }
+  };
 };

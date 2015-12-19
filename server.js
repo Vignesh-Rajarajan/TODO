@@ -25,8 +25,8 @@ app.get('/listall', middleware.requireAuthentication, function(req, res) {
 	} else if (searchStr.hasOwnProperty('completed') && searchStr.completed === 'false') {
 		copiedVal.completed = false;
 	}
-	if(req.user.id){
-		copiedVal.userId=req.user.id;
+	if (req.user.id) {
+		copiedVal.userId = req.user.id;
 	}
 	if (searchStr.hasOwnProperty('q') && searchStr.q.length > 0) {
 		copiedVal.description = {
@@ -57,11 +57,11 @@ app.get('/listall/:id', middleware.requireAuthentication, function(req, res) {
 
 
 	db.todo.findOne({
-		where:{
-			id:id,
-			userId:req.user.id
+		where: {
+			id: id,
+			userId: req.user.id
 		}
-		}).then(function(todo) {
+	}).then(function(todo) {
 		if (!!todo) {
 			res.json(todo.toJSON());
 		} else {
@@ -92,14 +92,14 @@ app.post('/todos', middleware.requireAuthentication, function(req, res) {
 
 app.delete('/listall/delete/:id', middleware.requireAuthentication, function(req, res) {
 	var id = parseInt(req.params.id);
-	
+
 	db.todo.destroy({
 		where: {
 			id: id,
-			userId:req.user.id
+			userId: req.user.id
 		}
 	}).then(function(data) {
-		
+
 		if (data > 0) {
 			res.status(200).json({
 				"data": "successfully deleted"
@@ -129,7 +129,12 @@ app.put('/listall/put/:id', middleware.requireAuthentication, function(req, res)
 		updatedTodo.description = beforUpdate.description;
 	}
 	var id = parseInt(req.params.id)
-	db.todo.findOne({where:{id:id, userId:req.user.id}}).then(function(data) {
+	db.todo.findOne({
+		where: {
+			id: id,
+			userId: req.user.id
+		}
+	}).then(function(data) {
 		if (data) {
 
 			data.update(updatedTodo).then(function(todo) {
@@ -154,7 +159,7 @@ app.put('/listall/put/:id', middleware.requireAuthentication, function(req, res)
 
 app.post('/users', function(req, res) {
 	var user = _.pick(req.body, 'email', 'password');
-	
+
 	if (!user) {
 		res.status(400).json();
 	}
@@ -173,9 +178,9 @@ app.post('/users', function(req, res) {
 app.post('/users/login', function(req, res) {
 
 	var user = _.pick(req.body, 'email', 'password');
-	
 
-	
+
+
 	db.user.authenticate(user).then(function(user) {
 		var token = user.generateToken('authentication');
 		if (!token) {
@@ -187,7 +192,7 @@ app.post('/users/login', function(req, res) {
 	});
 });
 
-db.sequelize.sync().then(function() {
+db.sequelize.sync({force:true}).then(function() {
 	app.listen(port, function() {
 		console.log('listening on port' + port);
 	});
