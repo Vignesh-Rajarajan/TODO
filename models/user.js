@@ -59,7 +59,7 @@ module.exports = function(sequelize, dataTypes) {
 					});
 
 					var genData = cryptojs.AES.encrypt(stringData, 'abc123!@#').toString();
-					.
+					
 					var token = jwt.sign({
 						token: genData
 					}, 'vickey290');
